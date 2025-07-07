@@ -37,9 +37,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "user",
+    "rest_framework",
+    "users",
     "projects",
-    "task",
+    "tasks",
 ]
 
 MIDDLEWARE = [
@@ -71,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "src.wsgi.application"
+WSGI_APPLICATION = "main_settings.wsgi.application"
 
 
 # Database
@@ -80,7 +81,7 @@ WSGI_APPLICATION = "src.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "core_service",
+        "NAME": "Project-management",
         "USER": "postgres",
         "PASSWORD": "25802",
         "HOST": "localhost",
