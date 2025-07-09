@@ -1,47 +1,58 @@
-# src/users/models.py
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin,
-    BaseUserManager,
-)
-from django.db import models
-from django.utils import timezone
+from rest_framework import generics, permissions
+from .models import Project, ProjectMember
+from .serializers import ProjectSerializer, ProjectMemberSerializer
+from core.permissions import IsOwnerOrProjectAdmin
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, username, password=None, **extra_fields):
-        if not email:
-            raise ValueError("Users must have an email address")
-        if not username:
-            raise ValueError("Users must have a username")
+class ProjectListCreateView(generics.ListCreateAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-        email = self.normalize_email(email)
-        user = self.model(email=email, username=username, **extra_fields)
-        user.set_password(password)
-        user.date_joined = timezone.now()
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, username, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-
-        return self.create_user(email, username, password, **extra_fields)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    date_joined = models.DateTimeField(default=timezone.now)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+class ProjectRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrProjectAdmin]
 
-    objects = CustomUserManager()
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+class ProjectView(APIView):
+    def get(self, request):
 
-    def __str__(self):
-        return self.email
+        role = request.query_params.get("role")
+        owner_id = request.query_params.get("owner_id")
+
+        queryset = (
+            Project.objects.prefetch_related(
+                "members",
+            )
+            .select_related("owner")
+            .all()
+        )
+
+        if owner_id:
+            queryset.filter(owner__id=owner_id)
+
+        if role:
+            queryset.filter(projectmember__role=role)
+
+        serializer = ProjectSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+
+class ProjectMemberListCreateView(generics.ListCreateAPIView):
+    queryset = ProjectMember.objects.all()
+    serializer_class = ProjectMemberSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class ProjectDeleteView(generics.DestroyAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrProjectAdmin]
