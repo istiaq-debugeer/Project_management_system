@@ -38,7 +38,7 @@ class Task(TimeStampedModel):
         return self.title
 
 
-class comments(TimeStampedModel):
+class Comments(TimeStampedModel):
     content = models.TextField(null=True, blank=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
