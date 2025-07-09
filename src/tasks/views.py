@@ -14,6 +14,9 @@ permission_classes = [permissions.IsAuthenticated, IsOwnerOrProjectAdmin]
 
 
 class TaskView(APIView):
+
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrProjectAdmin]
+
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
 

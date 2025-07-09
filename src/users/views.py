@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 
 # users/views.py
-class UserListCreateView(ModelViewSet):
+class UserRegisterView(ModelViewSet):
     queryset = User.objects.all()
 
     def get_serializer_class(self):
@@ -26,7 +26,7 @@ class UserListCreateView(ModelViewSet):
 
         data = serializer.save()
 
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(data, status=201)
 
 
 class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
