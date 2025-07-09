@@ -2,7 +2,7 @@ from tokenize import Comment
 from rest_framework import serializers
 from users.models import User
 from tasks.models import Task
-from .models import comments
+from .models import Comments
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -79,5 +79,5 @@ class CommentSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.username", read_only=True)
 
     class Meta:
-        model = comments
+        model = Comments
         fields = ["id", "task", "author", "author_name", "content", "created_at"]
